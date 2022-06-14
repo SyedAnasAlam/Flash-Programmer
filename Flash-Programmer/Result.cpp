@@ -1,25 +1,6 @@
-#pragma once
-#include <map>
-#include <string>
-#include <ftd2xx.h>
-#include <LibFT4222.h>
+#include "Result.h"
 
-#define SUCCESS 0
-#define DEBUG -1
-#define INCORRECT_NUMBER_BYTES 19
-#define TIME_OUT_ERROR 20
-#define CORRUPTED_UPLOAD 21
-
-using std::string;
-using std::map;
-
-struct outcome {
-	int code;
-	string msg;
-};
-
-
-map<int,std::string> outcomeMessages =
+std::map<int, std::string> resultMessages = 
 {
 	{FT_INVALID_HANDLE, "Invalid handle",},
 	{FT_DEVICE_NOT_FOUND, "Did not find FTDI device",},
@@ -66,5 +47,3 @@ map<int,std::string> outcomeMessages =
 	{TIME_OUT_ERROR, "Time out error while waiting for flash device to get ready",},
 	{CORRUPTED_UPLOAD, "The read data bits from the flash are not the same data bits that were programmed",}
 };
-
-
