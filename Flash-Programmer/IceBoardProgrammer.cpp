@@ -39,16 +39,18 @@ void handleResult(Result result)
 
 int main(int argc, char const* argv[])
 {
-    /*
-    if (argc != 2)
+    
+    /*if (argc != 2)
     {
-        cout << "Usage: Flash-Programmer <Filename>.bin" << endl;
+        std::cout << "Usage: Flash-Programmer <Filename>.bin" << std::endl;
         return EXIT_FAILURE;
     }
+    
     std::ifstream binfile("C:/Users/Saa03/Documents/Uni/6.Semester/Bachelorprojekt/Flash-Programmer/x64/Debug/Sqrt3600.bin", std::ifstream::binary);
-
+    std::vector<uint8> binfileBuffer;
+    
     binfile.seekg(0, binfile.end);
-    binfileSize = binfile.tellg();
+    int binfileSize = binfile.tellg();
     binfile.seekg(0, binfile.beg);
     binfileBuffer.resize(binfileSize);
     binfile.read((char *) & binfileBuffer[0], binfileSize);
@@ -57,13 +59,15 @@ int main(int argc, char const* argv[])
 
     std::cout << std::showbase << std::internal << std::setfill('0');
 
+    
     srand(time(NULL));
 
-    int binfileSize = 65535;
+    int binfileSize = 4096;
     std::vector<uint8> binfileBuffer(binfileSize);
     for(int i = 0; i < binfileSize; i++)
         binfileBuffer[i] = rand() % 0xFF;
     
+
     handleResult(InitBoard());
     handleResult(WakeUpFlash());
     handleResult(EraseFlash());
