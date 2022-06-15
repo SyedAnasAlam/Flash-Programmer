@@ -6,7 +6,7 @@
 #include <ftd2xx.h>
 #include <LibFT4222.h>
 #include <vector>
-#include "Result.h"
+#include <map>
 
 enum FlashCommands
 {
@@ -24,18 +24,22 @@ const int MAX_WAIT_TIME_MS = 500;
 const int MAX_PAGE_PROGRAM_ATTEMPTS = 5;
 const int FLASH_PAGE_SIZE = 256;
 const int FLASH_SECTOR_SIZE = 4096;
+const int MAX_READ_SIZE = 65535;
 
-Result InitBoard();
-Result WriteSPI(std::vector<uint8> writeBuffer, size_t bytesToWrite, bool isEndTransaction);
-Result ReadSPI(std::vector<uint8>* readBuffer, size_t bytesToRead, bool isEndTransaction);
-Result WaitForFlashReady();
-Result WakeUpFlash();
-Result EraseFlash();
-Result EraseSector(int startAddress);
-Result WriteEnableFlash();
-Result PageProgramFlash(int pageIndex, std::vector<uint8> writeBuffer);
-Result SectorProgramFlash(int sectorIndex, std::vector<uint8> writeBuffer);
-Result ReadSectorFlash(int sectorIndex, std::vector<uint8>* readBuffer);
-Result ReadPageFlash(int pageIndex, std::vector<uint8>* readBuffer);
-Result ProgramFlash(std::vector<uint8> fileBuffer);
-Result ValidateFlash(std::vector<uint8> fileBuffer);
+extern std::map<int, std::string> statusMessages;
+
+FT_STATUS InitBoard();
+FT4222_STATUS WriteSPI(std::vector<uint8> writeBuffer, size_t bytesToWrite, bool isEndTransaction);
+FT4222_STATUS ReadSPI(std::vector<uint8>* readBuffer, size_t bytesToRead, bool isEndTransaction);
+FT4222_STATUS WaitForFlashReady();
+FT4222_STATUS WakeUpFlash();
+FT4222_STATUS EraseFlash();
+FT4222_STATUS EraseSector(int startAddress);
+FT4222_STATUS WriteEnableFlash();
+FT4222_STATUS PageProgramFlash(int pageIndex, std::vector<uint8> writeBuffer);
+FT4222_STATUS SectorProgramFlash(int sectorIndex, std::vector<uint8> writeBuffer);
+FT4222_STATUS ReadSectorFlash(int sectorIndex, std::vector<uint8>* readBuffer);
+FT4222_STATUS ReadPageFlash(int pageIndex, std::vector<uint8>* readBuffer);
+FT4222_STATUS ProgramFlash(std::vector<uint8> fileBuffer);
+FT4222_STATUS ValidateFlash(std::vector<uint8> fileBuffer);
+

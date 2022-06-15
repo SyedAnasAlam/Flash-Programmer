@@ -14,39 +14,31 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iomanip>
-#include "Result.h"
 #include "IceBoard.h"
 
-#define COUNT 5000
+//std::map<int, std::string> statusMessages;
 
-
-void handleResult(Result result)
+void HandleStatus(int status)
 {
-    std::string prefix;
-
-    if (result.code == DEBUG)
-        prefix = "DEBUG";
-    else if (result.code == SUCCESS)
-        prefix = "SUCCESS";
-    else
-        prefix = "ERROR " + std::to_string(result.code);
-
-    std::cout << prefix << ": " << result.msg << std::endl;
-
-    if (result.code > 0)
+    if (status != (int)FT_OK || status != (int)FT4222_OK)
+    {
+        std::cout << statusMessages[status] << std::endl;
         exit(EXIT_FAILURE);
+    }
 }
 
 int main(int argc, char const* argv[])
 {
-    
-    /*if (argc != 2)
+    /*
+    if (argc != 2)
     {
         std::cout << "Usage: Flash-Programmer <Filename>.bin" << std::endl;
         return EXIT_FAILURE;
     }
+    */
+
     
-    std::ifstream binfile("C:/Users/Saa03/Documents/Uni/6.Semester/Bachelorprojekt/Flash-Programmer/x64/Debug/Sqrt3600.bin", std::ifstream::binary);
+    std::ifstream binfile("C:/Users/Saa03/Documents/Uni/6.Semester/Bachelorprojekt/Flash-Programmer/x64/Debug/Multiply.bin", std::ifstream::binary);
     std::vector<uint8> binfileBuffer;
     
     binfile.seekg(0, binfile.end);
@@ -55,24 +47,28 @@ int main(int argc, char const* argv[])
     binfileBuffer.resize(binfileSize);
     binfile.read((char *) & binfileBuffer[0], binfileSize);
     binfile.close();   
-    */
-
-    std::cout << std::showbase << std::internal << std::setfill('0');
-
     
-    srand(time(NULL));
 
-    int binfileSize = 4096;
+    /*srand((unsigned int)time(NULL));
+    int binfileSize = 135536;
     std::vector<uint8> binfileBuffer(binfileSize);
-    for(int i = 0; i < binfileSize; i++)
-        binfileBuffer[i] = rand() % 0xFF;
+    for (int i = 0; i < binfileSize; i++)
+        binfileBuffer[i] = i % 0xFF;*/
     
+    FT_STATUS ftStatus = InitBoard();
+    std::cout << "Connection established with Ice Board" << std::endl;
+   
+    HandleStatus(WakeUpFlash());
+    std::cout << "Flash is waken up" << std::endl;
 
-    handleResult(InitBoard());
-    handleResult(WakeUpFlash());
-    handleResult(EraseFlash());
-    handleResult(ProgramFlash(binfileBuffer));
-    handleResult(ValidateFlash(binfileBuffer));
+    HandleStatus(EraseFlash());
+    std::cout << "Flash is erased" << std::endl;
+
+    HandleStatus(ProgramFlash(binfileBuffer));
+    std::cout << "Uploaded all file bits to flash" << std::endl;
+
+    HandleStatus(ValidateFlash(binfileBuffer));
+    std::cout << "Success! Flash is programmed" << std::endl;
 
     return EXIT_SUCCESS;
 }

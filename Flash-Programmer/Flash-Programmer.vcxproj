@@ -132,11 +132,9 @@
   <ItemGroup>
     <ClCompile Include="IceBoard.cpp" />
     <ClCompile Include="IceBoardProgrammer.cpp" />
-    <ClCompile Include="Result.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IceBoard.h" />
-    <ClInclude Include="Result.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
