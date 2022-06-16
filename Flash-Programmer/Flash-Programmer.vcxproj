@@ -24,6 +24,7 @@
     <ProjectGuid>{f9452722-38f1-4448-a190-44663e4e19f9}</ProjectGuid>
     <RootNamespace>FlashProgrammer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>IceBoard-Programmer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

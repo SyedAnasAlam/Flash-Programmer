@@ -49,7 +49,7 @@ int main(int argc, char const* argv[])
 {
     if (argc != 2)
     {
-        std::cout << "Usage: Flash-Programmer <Filename>.bin" << std::endl;
+        std::cout << "Usage: ./IceBoard-Programmer.exe <Filename>.bin" << std::endl;
         return EXIT_FAILURE;
     }
 
