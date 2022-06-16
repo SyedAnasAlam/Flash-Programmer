@@ -20,12 +20,13 @@ enum FlashCommands
     DummyCmd = 0xFF
 };
 
-const int FLASH_SIZE = 262144;
-const int FLASH_PAGE_SIZE = 256;
-const int FLASH_SECTOR_SIZE = 4096;
-const int MAX_READ_SIZE = 65535;
-const int MAX_WAIT_TIME_MS = 500;
-const int MAX_SECTOR_PROGRAM_ATTEMPTS = 5;
+// All size constants below are given in units of bytes
+const int FLASH_SIZE = 262144;              // Size of flash
+const int FLASH_PAGE_SIZE = 256;            // Size of a page in the flash
+const int FLASH_SECTOR_SIZE = 4096;         // Size of a sector in flash
+const int MAX_READ_SIZE = 65535;            // Maximum bytes that can be read in one read command
+const int MAX_WAIT_TIME_MS = 500;           // Max amount of time to wait for flash device to signal its ready
+const int MAX_SECTOR_PROGRAM_ATTEMPTS = 5;  // Max number of attemåts to re-program a sector (in case some of the data was corrupted during upload)
 
 extern std::map<int, std::string> statusMessages;
 

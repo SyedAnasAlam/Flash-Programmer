@@ -15,6 +15,16 @@ inline std::vector<unsigned char> IntToByteVec(int x)
     return byte;
 }
 
+/*
+* Finds all FTDI devices connected to host and saves those FTDI devices that are of type FT4222
+* The Ice Board is a FT4222 device
+* Establishes connection with the first FT4222 device it finds
+* Initializes the FT4222 IC on the Ice Board to following:
+*   - SPI Master, in single SPI mode (one MOSI and one MISO)
+*   - SPI clock to be half that of FT4222 clock
+*   - SPI clock is high when idle
+*   - Shifts data out on trailing clock edge
+*/
 FT_STATUS InitBoard()
 {
     FT_STATUS status = FT_OK;
@@ -62,6 +72,12 @@ FT_STATUS InitBoard()
 
     return status;
 }
+
+/*
+* Writes the content of writeBuffer out on SPI 
+* Only writes the number of bytes as specified by the second argument bytesToWrite
+* If third argument isEndTransaction is true the SS signal will go high after sending the data in writeBuffer
+*/
 FT4222_STATUS WriteSPI(std::vector<uint8> writeBuffer, size_t bytesToWrite, bool isEndTransaction)
 {
     FT4222_STATUS status = FT4222_OK;
@@ -75,6 +91,11 @@ FT4222_STATUS WriteSPI(std::vector<uint8> writeBuffer, size_t bytesToWrite, bool
 
     return status;
 }
+
+/*
+* Reads bytesToRead bytes from SPI and stores the read data in readBuffer
+* If third argument isEndTransaction is true the SS signal will go high after reading the bytes
+*/
 FT4222_STATUS ReadSPI(std::vector<uint8>* readBuffer, size_t bytesToRead, bool isEndTransaction)
 {
     FT4222_STATUS status;
@@ -88,6 +109,14 @@ FT4222_STATUS ReadSPI(std::vector<uint8>* readBuffer, size_t bytesToRead, bool i
 
     return status;
 }
+
+/*
+* Whenever a page is programmed or any erase command is sent this function should be called
+* It waits until the flash has completed the program or erase command
+* The function reads the status register and checks if the lest-significant-bit is cleared (0)
+* If the bit is cleared the flash is ready otherwise it is busy and the bit is checked again after 1ms
+* If the flash is still busy after MAX_WAIT_TIME_MS a time out error is issued
+*/
 FT4222_STATUS WaitForFlashReady()
 {
     FT4222_STATUS status;
@@ -112,6 +141,10 @@ FT4222_STATUS WaitForFlashReady()
 
     return FT4222_TIME_OUT_ERROR;
 }
+
+/*
+* Sends a wake up command
+*/
 FT4222_STATUS WakeUpFlash()
 {
     FT4222_STATUS status = WriteSPI({ WakeUpCmd }, 1, true);
@@ -120,6 +153,22 @@ FT4222_STATUS WakeUpFlash()
 
     return status;
 }
+
+/*
+* Sends write enable command
+*/
+FT4222_STATUS WriteEnableFlash()
+{
+    FT4222_STATUS status = WriteSPI({ WriteEnableCmd }, 1, true);
+    if (status != FT4222_OK)
+        return status;
+
+    return status;
+}
+
+/*
+* Erases the entire flash
+*/
 FT4222_STATUS EraseFlash()
 {
     FT4222_STATUS status;
@@ -138,6 +187,10 @@ FT4222_STATUS EraseFlash()
 
     return status;
 }
+
+/*
+* Erases a sector given by the sectorIndex
+*/
 FT4222_STATUS EraseSector(int sectorIndex)
 {
     FT4222_STATUS status;
@@ -159,14 +212,11 @@ FT4222_STATUS EraseSector(int sectorIndex)
 
     return status;
 }
-FT4222_STATUS WriteEnableFlash()
-{
-    FT4222_STATUS status = WriteSPI({ WriteEnableCmd }, 1, true);
-    if (status != FT4222_OK)
-        return status;
 
-    return status;
-}
+
+/*
+* Programs one page given by the pageIndex with the content of the writeBuffer
+*/
 FT4222_STATUS PageProgramFlash(int pageIndex, std::vector<uint8> writeBuffer)
 {
     FT4222_STATUS status;
@@ -195,6 +245,12 @@ FT4222_STATUS PageProgramFlash(int pageIndex, std::vector<uint8> writeBuffer)
 
     return status;
 }
+
+/*
+* Programs one sector given by the sectorIndex with the content of the sectorBuffer
+* If the sectorBuffer size is less than the size of a flash sector size only the bytes actually present in the sectorBuffer are programmed
+* sectorBuffer may not be larger than a flash sector size
+*/
 FT4222_STATUS SectorProgramFlash(int sectorIndex, std::vector<uint8> sectorBuffer)
 {
     FT4222_STATUS status = FT4222_OK;
@@ -215,6 +271,10 @@ FT4222_STATUS SectorProgramFlash(int sectorIndex, std::vector<uint8> sectorBuffe
 
     return status;
 }
+
+/*
+* Reads a sector of the flash at sectorIndex and stores the read data in readBuffer
+*/
 FT4222_STATUS ReadSectorFlash(int sectorIndex, std::vector<uint8>* readBuffer)
 {
     FT4222_STATUS status;
@@ -233,17 +293,25 @@ FT4222_STATUS ReadSectorFlash(int sectorIndex, std::vector<uint8>* readBuffer)
 
     return status;
 }
+
+/*
+* Programs the conent of the fileBuffer to the flash
+*/
 FT4222_STATUS ProgramFlash(std::vector<uint8> fileBuffer)
 {
     FT4222_STATUS status = FT4222_OK;
 
+    // Points into fileBuffer the current non-programmed byte
     int bufferPointer = 0;
     std::vector<uint8> readBuffer;
-    size_t sectorCount = 1 + ((fileBuffer.size() - 1) / FLASH_SECTOR_SIZE);
+    
     bool success = false;
     int attempts = 0;
     int bytesToTransmit = 0;
     int errorCount = 0;
+    
+    // Number of sectors to program rounded up
+    size_t sectorCount = 1 + ((fileBuffer.size() - 1) / FLASH_SECTOR_SIZE);
 
     for (int i = 0; i < sectorCount; i++)
     {
@@ -253,31 +321,35 @@ FT4222_STATUS ProgramFlash(std::vector<uint8> fileBuffer)
         while (!success)
         {
             errorCount = 0;
+
+            // Extract the current sector from the fileBuffer and copies it into sectorBuffer
             std::vector<uint8>::const_iterator first = fileBuffer.begin() + bufferPointer;
             std::vector<uint8>::const_iterator last = i == sectorCount - 1 ? fileBuffer.end() : fileBuffer.begin() + bufferPointer + FLASH_SECTOR_SIZE;
             std::vector<uint8> sectorBuffer(first, last);
 
+            // The file may not be perfectly divisble into the flash sector size
             bytesToTransmit = (i == sectorCount - 1) ? (int)fileBuffer.size() - i * FLASH_SECTOR_SIZE : FLASH_SECTOR_SIZE;
 
+            // Program the sector
             status = SectorProgramFlash(i, sectorBuffer);
             if (status != FT4222_OK)
                 return status;
-
-            WaitForFlashReady();
-
+            
+            // Read back the sector
             status = ReadSectorFlash(i, &readBuffer);
             if (status != FT4222_OK)
                 return status;
 
+            // Check for any corruptions
             for (int j = 0; j < bytesToTransmit; j++)
             {
                 if (readBuffer[j] != sectorBuffer[j])
                     errorCount++;
             }
 
+            // If there was a corruption erase the sector and try again
             if (errorCount > 0)
             {
-                std::cout << "Failed to program sector " <<  i << ", " << errorCount << " Errors" << std::endl;
                 status = EraseSector(i);
                 if (status != FT4222_OK)
                     return status;
@@ -294,6 +366,12 @@ FT4222_STATUS ProgramFlash(std::vector<uint8> fileBuffer)
     }
     return status;
 }
+
+/*
+* Reads out the entire flash
+* Compares the content of the flash with the content of fileBuffer
+* If they are not the same the programming failed
+*/
 FT4222_STATUS ValidateFlash(std::vector<uint8> fileBuffer)
 {
     FT4222_STATUS status = FT4222_OK;
@@ -302,7 +380,6 @@ FT4222_STATUS ValidateFlash(std::vector<uint8> fileBuffer)
     std::vector<uint8> commandAndAddressBuffer;
     int n = 1 + (((int)fileBuffer.size() - 1) / MAX_READ_SIZE);
     int pointer = 0;
-
 
     for (int i = 0; i < n; i++)
     {
@@ -328,11 +405,7 @@ FT4222_STATUS ValidateFlash(std::vector<uint8> fileBuffer)
     for (int i = 0; i < fileBuffer.size(); i++)
     {
         if (readBuffer[i] != fileBuffer[i])
-        {
-            std::cout << "Corruption at address " + std::to_string(i) << std::endl;
             return FT4222_CORRUPTED_UPLOAD;
-        }
-            
     }
 
     return status;

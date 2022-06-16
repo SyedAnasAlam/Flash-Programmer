@@ -47,7 +47,6 @@ std::vector<uint8> OpenFile(std::string filePath)
 
 int main(int argc, char const* argv[])
 {
-
     if (argc != 2)
     {
         std::cout << "Usage: Flash-Programmer <Filename>.bin" << std::endl;
@@ -59,9 +58,9 @@ int main(int argc, char const* argv[])
     
     HandleStatus(InitBoard());
     std::cout << "Connection established with Ice Board" << std::endl;
-
     HandleStatus(WakeUpFlash());
     HandleStatus(EraseFlash());
+    std::cout << "Uploading " << fileBuffer.size() << " Bytes" << std::endl;
     HandleStatus(ProgramFlash(fileBuffer));
     HandleStatus(ValidateFlash(fileBuffer));
     std::cout << "Success! Flash is programmed" << std::endl;
