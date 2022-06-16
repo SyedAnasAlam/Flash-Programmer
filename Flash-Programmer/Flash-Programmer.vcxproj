@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="IceBoard.cpp" />
     <ClCompile Include="IceBoardProgrammer.cpp" />
+    <ClCompile Include="StatusMessages.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IceBoard.h" />

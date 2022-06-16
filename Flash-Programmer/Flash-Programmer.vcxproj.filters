@@ -21,6 +21,9 @@
     <ClCompile Include="IceBoardProgrammer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StatusMessages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IceBoard.h">
